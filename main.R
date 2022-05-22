@@ -74,7 +74,8 @@ y_hat <- ifelse(test_set$height > best_cutoff, "Male", "Female") %>%
 y_hat <- factor(y_hat)
 mean(y_hat == test_set$sex)
 
-# this is a comment.
+# This is a comment.
+# This is another comment.
 
 table( predicted = y_hat, actual = test_set$sex )
 test_set %>%
