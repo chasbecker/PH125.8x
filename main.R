@@ -210,6 +210,8 @@ library(caret) # this is ML, right?
 library( dslabs )
 data( reported_heights )
 
+
+# Q1 - Q6
 dat <- mutate( reported_heights, date_time = ymd_hms( time_stamp)) %>%
   filter( date_time >= make_date( 2016,01,25 ) & date_time < make_date( 2016, 02, 1 )) %>%
   mutate( type = ifelse( day(date_time) == 25 & hour(date_time) == 8 & between( minute(date_time), 15, 30), "inclass", "online")) %>%
@@ -232,4 +234,29 @@ mean(oclass$y == "Female")
 y_hat <- ifelse( tclass$x == "inclass", "Female", "Male") %>% 
   factor(levels = levels(tclass$y)) 
 mean(y_hat==y)
+
+t1 <- table(y_hat, y)
+t1
+sensitivity(t1)
+specificity(t1)
+
+mean( y == "Female")
+
+rm(list = ls())
+library( tidyverse ) # includes dplyr
+library( lubridate )
+library(caret) # this is ML, right?
+library( dslabs )
+data( iris )
+
+# Q7 - Q11
+iris <- iris[-which(iris$Species=='setosa'),]
+y <- iris$Species
+y
+
+set.seed(2, sample.kind='Rounding')
+test_index <- createDataPartition(y, times=1, p=0.5, list=FALSE)
+test <- iris[test_index]
+train <- iris[-test_index]
+
 
