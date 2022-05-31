@@ -256,7 +256,20 @@ y
 
 set.seed(2, sample.kind='Rounding')
 test_index <- createDataPartition(y, times=1, p=0.5, list=FALSE)
-test <- iris[test_index]
-train <- iris[-test_index]
+test <- iris[test_index,]
+train <- iris[-test_index,]
+
+# Q8
+calc_accuracy_by_feature <- function( cabf ){
+  range_v <- seq( min(cabf), max(cabf), by=0.1 )
+  sapply(range_v, function( idx ){
+    y_hat <- ifelse( cabf > idx, 'virginica', 'versicolor')
+    mean( y_hat == train$Species )}
+  )}
+
+predictions <- apply(train[,-5], MARGIN = 2, FUN = calc_accuracy_by_feature )
+
+sapply( predictions, max )
+
 
 
