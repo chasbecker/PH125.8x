@@ -260,16 +260,48 @@ test <- iris[test_index,]
 train <- iris[-test_index,]
 
 # Q8
-calc_accuracy_by_feature <- function( cabf ){
-  range_v <- seq( min(cabf), max(cabf), by=0.1 )
-  sapply(range_v, function( idx ){
-    y_hat <- ifelse( cabf > idx, 'virginica', 'versicolor')
-    mean( y_hat == train$Species )}
+f <- function(x){
+  rv <- seq(min(x), max(x), by=0.1) #rv = ranged values
+  sapply(rv,
+         function(i){
+           y_hat <- ifelse(x > i,'virginica','versicolor')
+           mean(y_hat == train$Species)} #here we can find the accuracy 
   )}
 
-predictions <- apply(train[,-5], MARGIN = 2, FUN = calc_accuracy_by_feature )
+predictions <- apply(train[,-5],MARGIN = 2, FUN = f)
+sapply(predictions,max) 
 
-sapply( predictions, max )
+predictions <- f(train[,3])
+# max(predictions)
+# min(predictions)
+rv <- seq( min(train[,3]), max(train[,3]), by=0.1 ) 
 
+cutoffs <- rv[which(predictions == max(predictions))]
+y_hat <- ifelse( test[,3]>cutoffs[1], 'virginica', 'versicolor' )
+mean( y_hat == test$Species )
 
+# Q10
+predictions_t <- apply(test[,-5],MARGIN = 2, FUN = f)
+sapply(predictions_t,max)
 
+# Q11
+plot( iris, pch=21, bg=iris$Species )
+
+# Q12
+LPetal <- seq( min(train$Petal.Length), max(train$Petal.Length), by=0.1 )
+WPetal <- seq( min(train$Petal.Width), max(train$Petal.Width), by=0.1 )
+
+l_predict <- sapply( LPetal, function(i){
+  y_hat <- ifelse( train$Petal.Length > i, 'virginica', 'versicolor')
+  mean( y_hat == train$Species )
+})
+l_cutoff <- LPetal[which.max(l_predict)]
+
+w_predict <- sapply( WPetal, function(i){
+  y_hat <- ifelse( train$Petal.Width > i, 'virginica', 'versicolor')
+  mean( y_hat == train$Species )
+})
+w_cutoff <- WPetal[which.max(w_predict)]
+
+y_hat <- ifelse( test$Petal.Length>l_cutoff | test$Petal.Width>w_cutoff, 'virginica', 'versicolor')
+mean( y_hat==test$Species)
