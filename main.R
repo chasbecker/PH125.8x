@@ -269,7 +269,7 @@ f <- function(x){
   )}
 
 predictions <- apply(train[,-5],MARGIN = 2, FUN = f)
-sapply(predictions,max) 
+sapply(predictions, max) 
 
 predictions <- f(train[,3])
 # max(predictions)
@@ -305,3 +305,14 @@ w_cutoff <- WPetal[which.max(w_predict)]
 
 y_hat <- ifelse( test$Petal.Length>l_cutoff | test$Petal.Width>w_cutoff, 'virginica', 'versicolor')
 mean( y_hat==test$Species)
+
+rm(list=ls())
+library(tidyverse)
+
+# Q1
+tp <- .85
+pr <- .02
+fp <- .90
+# TruPos*Prev divided by TruPos*Prev plus (1-FlsPos)*(1-Prev)
+prob <-  (tp*pr)/((tp*pr)+((1-fp)*(1-pr)))
+prob
