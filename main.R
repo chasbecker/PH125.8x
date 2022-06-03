@@ -316,3 +316,28 @@ fp <- .90
 # TruPos*Prev divided by TruPos*Prev plus (1-FlsPos)*(1-Prev)
 prob <-  (tp*pr)/((tp*pr)+((1-fp)*(1-pr)))
 prob
+
+bayes_func <- function( tp, pr, fp ){
+  return( (tp*pr)/((tp*pr)+((1-fp)*(1-pr))) )
+}
+
+set.seed(1, sample.kind = "Rounding")
+disease <- sample( c(0,1), size = 1e6, replace = TRUE, prob = c(0.98, 0.02 ) )
+test <- rep( NA, 1e6 )
+test[disease == 0] <- sample( c(0,1), size = sum(disease == 0), replace = TRUE, prob = c(0.90, 0.10))
+test[disease == 1] <- sample( c(0,1), size = sum(disease == 1), replace = TRUE, prob = c(0.15, 0.85))
+mean(test)
+mean(disease[test==0])
+tp <- mean(disease[test==1]==1)
+pr <- mean(disease)
+tp/pr
+
+# Q6
+rm(list=ls())
+library(tidyverse)
+library(dslabs)
+data("heights")
+heights %>% mutate( height = round(height) ) %>%
+  group_by( height ) %>%
+  summarize( p = mean( sex == "Male" )) %>%
+               qplot( height, p, data=. )
