@@ -321,6 +321,9 @@ bayes_func <- function( tp, pr, fp ){
   return( (tp*pr)/((tp*pr)+((1-fp)*(1-pr))) )
 }
 
+bayes_func_prob <- bayes_func(tp, pr, fp)
+rm(list=ls())
+
 set.seed(1, sample.kind = "Rounding")
 disease <- sample( c(0,1), size = 1e6, replace = TRUE, prob = c(0.98, 0.02 ) )
 test <- rep( NA, 1e6 )
@@ -337,7 +340,18 @@ rm(list=ls())
 library(tidyverse)
 library(dslabs)
 data("heights")
-heights %>% mutate( height = round(height) ) %>%
-  group_by( height ) %>%
-  summarize( p = mean( sex == "Male" )) %>%
-               qplot( height, p, data=. )
+ps <- seq(0, 1, 0.1)
+heights %>% 
+  # MISSING CODE
+  mutate(g = cut(height, quantile(height, ps), include.lowest = TRUE )) %>%
+  group_by(g) %>%
+  summarize(p = mean(sex == "Male"), height = mean(height)) %>%
+  qplot(height, p, data =.)
+
+install.packages("MASS")
+library(mass)
+
+Sigma <- 9*matrix(c(1, 0.5, 0.5, 1), 2, 2)
+dat <- MASS::mvrnorm( n=10000, c( 69,69 ), Sigma ) %>%
+  data.frame() %>%
+  setNames(c("x", "y"))
