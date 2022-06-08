@@ -348,10 +348,24 @@ heights %>%
   summarize(p = mean(sex == "Male"), height = mean(height)) %>%
   qplot(height, p, data =.)
 
-install.packages("MASS")
-library(mass)
+#install.packages("MASS")
+library(MASS)
 
 Sigma <- 9*matrix(c(1, 0.5, 0.5, 1), 2, 2)
 dat <- MASS::mvrnorm( n=10000, c( 69,69 ), Sigma ) %>%
   data.frame() %>%
   setNames(c("x", "y"))
+plot(dat)
+
+
+pst <-seq(0,1,0.1)
+dat %>%  mutate(g = cut(x, quantile(x, pst), include.lowest = TRUE)) %>%
+  group_by(g) %>%
+  summarize(y = mean(y), x = mean(x)) %>%
+  qplot( x, y, data = . )
+
+# what is this DOING?
+xyz <- dat %>%  mutate(g = cut(x, quantile(x, pst), include.lowest = TRUE))
+
+rm(list=ls())
+library(tidyverse)
