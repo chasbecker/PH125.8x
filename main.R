@@ -365,7 +365,71 @@ dat %>%  mutate(g = cut(x, quantile(x, pst), include.lowest = TRUE)) %>%
   qplot( x, y, data = . )
 
 # what is this DOING?
-xyz <- dat %>%  mutate(g = cut(x, quantile(x, pst), include.lowest = TRUE))
+xyg <- dat %>%  mutate(g = cut(x, quantile(x, pst), include.lowest = TRUE))
+xyg
+
 
 rm(list=ls())
 library(tidyverse)
+# install.packages("HistData")
+library(HistData)
+# make sure the MASS library is not loaded
+# if it is, must use "dplyr::select()" syntax
+
+galton_heights <- GaltonFamilies %>%
+  filter( childNum == 1 & gender == "male" ) %>%
+  select( father, childHeight ) %>%
+  rename( son = childHeight )
+
+library(caret)
+y <- galton_heights$son
+test_index <- createDataPartition(y, times = 1, p = 0.5, list = FALSE )
+
+train_set <- galton_heights %>% slice( -test_index )
+test_set <- galton_heights %>% slice( test_index )
+
+avg <- mean( train_set$son )
+avg
+
+mean( ( avg - test_set$son )^2 )
+
+fit <- lm( son ~ father, data = train_set )
+fit$coef
+
+y_hat <- fit$coef[1] + fit$coef[2]*test_set$father
+mean( ( y_hat - test_set$son)^2 )
+
+y_hat <- predict( fit, test_set )
+mean( (y_hat - test_set$son)^2 )
+
+# Comprehension Check: Linear Regression
+
+rm(list=ls())
+library( tidyverse )
+library( caret )
+
+set.seed( 1, sample.kind = "Rounding" )
+n <- 100
+Sigma <-  9*matrix( c(1.0, 0.5, 0.5, 1.0), 2, 2 )
+dat <- MASS::mvrnorm( n = 100, c(69,69), Sigma ) %>%
+  data.frame() %>%
+  setNames( c("x", "y") )
+
+set.seed( 1, sample.kind = "Rounding" )
+rmse <- replicate( n, { 
+  
+  test_index <- createDataPartition( dat$y, times = 1, p = 0.5, list = FALSE )
+  train_set <- dat %>% slice( -test_index )
+  test_set <- dat %>% slice( test_index )
+  
+  fit <- lm( y ~ x, data = train_set )
+  
+  y_hat <- predict( fit, newdata = test_set )
+  
+  sqrt(mean( (y_hat - test_set$y)^2 ))
+  
+} )
+
+rmse
+mean(rmse)
+sd(rmse)
