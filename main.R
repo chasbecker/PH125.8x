@@ -464,6 +464,9 @@ results
 
 # Q4
 rm(list=ls())
+library( tidyverse )
+library( caret )
+library( MASS )
 
 set.seed( 1, sample.kind = "Rounding" )
 n <- 100
@@ -511,7 +514,7 @@ sqrt( mean( (y_hat - test_set$y )^2 ))
 # ?!?!?!?!?
 
 set.seed(1, sample.kind="Rounding") # if using R 3.6 or later
-Sigma <- matrix(c(1.0, 0.75, 0.75, 0.75, 1.0, 0.95, 0.75, 0.95, 1.0), 3, 3)
+Sigma <- matrix(c(1.0, 0.75, 0.75, 0.75, 1.0, 0.25, 0.75, 0.25, 1.0), 3, 3)
 dat <- MASS::mvrnorm(n = 100, c(0, 0, 0), Sigma) %>%
   data.frame() %>% setNames(c("y", "x_1", "x_2"))
 
@@ -533,5 +536,35 @@ y_hat <- predict(fit, newdata = test_set)
 sqrt(mean((y_hat-test_set$y)^2))
 
 
+# regression for a categorical outcome
 
+rm(list=ls())
+library(tidyverse)
+library(dslabs)
+library(caret)
+data("heights")
+y <- heights$height
+
+set.seed(2, sample.kind = "Rounding")
+test_index <- createDataPartition(y, times = 1, p = 0.5, list=FALSE)
+train_set <- heights %>% slice(-test_index)
+test_set <- heights %>% slice(test_index)
+
+train_set %>%
+  filter( round(height) == 66 ) %>%
+  summarize( y_hat = mean(sex == "Female") )
+
+heights %>%
+  mutate( x = round(height) ) %>%
+  group_by(x) %>%
+  filter( n() >= 10 ) %>%
+  summarize( prop = mean( sex == "Female") ) %>%
+  ggplot( aes(x, prop)) +
+  geom_point()
+
+lm_fit <- mutate( train_set, y = as.numeric(sex == "Female") ) %>%
+  lm( y ~ height, data = .)
+p_hat <- predict( lm_fit, test_set )
+y_hat <-  ifelse( p_hat > 0.5, "Female", "Male" ) %>% factor()
+confusionMatrix( y_hat, test_set$sex )$overall["Accuracy"]
 
