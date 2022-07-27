@@ -568,3 +568,119 @@ p_hat <- predict( lm_fit, test_set )
 y_hat <-  ifelse( p_hat > 0.5, "Female", "Male" ) %>% factor()
 confusionMatrix( y_hat, test_set$sex )$overall["Accuracy"]
 
+
+heights %>%
+  mutate( x= round(height) ) %>%
+  group_by(x) %>%
+  filter( n() >= 10 ) %>%
+  summarize( prop = mean( sex == "Female")) %>%
+  ggplot(aes(x, prop)) +
+  geom_point() +
+  geom_abline(intercept = lm_fit$coef[1], slope = lm_fit$coef[2])
+
+range(p_hat)
+
+glm_fit <- train_set %>%
+  mutate( y = as.numeric(sex == "Female") ) %>%
+  glm( y ~ height, data=., family = "binomial" )
+
+p_hat_logit <- predict( glm_fit, newdata = test_set, type = "response" )
+
+tmp <- heights %>%
+  mutate( x = round(height) ) %>%
+  group_by( x ) %>%
+  filter( n() >= 10 ) %>%
+  summarize( prop = mean( sex == "Female") )
+
+logistic_curve <- data.frame( x = seq(min(tmp$x), max(tmp$x))) %>%
+  mutate( p_hat = plogis( glm_fit$coef[1] + glm_fit$coef[2]*x ) )
+
+tmp %>%
+  ggplot(aes(x, prop)) +
+  geom_point() +
+  geom_line( data = logistic_curve, mapping = aes(x, p_hat), lty = 2)
+
+y_hat_logit <- ifelse( p_hat_logit > 0.5, "Female", "Male" ) %>% factor
+confusionMatrix(y_hat_logit, test_set$sex)$overall[["Accuracy"]]
+
+
+# assessment ===================================
+rm(list=ls())
+library(tidyverse)
+library(dslabs)
+library(caret)
+
+
+mnist <- read_mnist()
+typeof(mnist)
+mnist_27
+mnist     # okay, so this is like "WTF?" (look at the console)
+is <- mnist_27$index_train[c( which.min(mnist_27$train$x_1), which.max(mnist_27$train$x_1))]
+titles <- c("smallest", "largest")
+tmp <- lapply(1:2, function(i){
+       expand.grid(Row=1:28, Column=1:28) %>%
+       mutate(label=titles[i], value = mnist$train$images[is[i],])
+})
+tmp
+
+tmp <- Reduce(rbind, tmp)
+View(tmp)  # <--- WTF is this?!?!?!?
+tmp %>% ggplot(aes(Row, Column, fill=value)) +
+  geom_raster() +
+  scale_y_reverse() +
+  scale_fill_gradient(low="white", high="black") +
+  facet_grid(.~label) +
+  geom_vline(xintercept = 14.5) +
+  geom_hline(yintercept = 14.5)
+
+data("mnist_27")
+mnist_27$train %>% ggplot(aes(x_1,x_2, color=y)) +
+  geom_point()
+
+is <- mnist_27$index_train[c(which.min(mnist_27$train$x_2), which.max(mnist_27$train$x_2))]
+titles <- c("smallest", "largest")
+tmp <- lapply(1:2, function(i){
+  expand.grid(Row=1:28, Column=1:28) %>%
+    mutate(label=titles[i],
+           value = mnist$train$images[is[i],])
+})
+
+tmp <- Reduce(rbind, tmp)
+
+# manually typed
+tmp %>% ggplot(aes(Row, Column, fill=value)) +
+  geom_raster() +
+  scale_y_reverse() +
+  scale_fill_gradient(low="white", high="black") +
+  facet_grid(.~label) +
+  geom_vline(xintercept = 14.5) +
+  geom_hline(yintercept = 14.5)
+
+fit_glm <- glm( y~x_1+x_2, data=mnist_27$train, family="binomial")
+p_hat_glm <- predict( fit_glm, mnist_27$test)
+y_hat_glm <- factor(ifelse(p_hat_glm>0.5, 7, 2))
+confusionMatrix( data = y_hat_glm, reference = mnist_27$test$y)$overall["Accuracy"]
+
+mnist_27$true_p %>% ggplot(aes(x_1, x_2, z=p, fill=p)) +
+  geom_raster()
+
+mnist_27$true_p %>% ggplot(aes(x_1, x_2, z=p, fill=p)) +
+  geom_raster() +
+  scale_fill_gradientn(colors=c("#F8766D", "white", "#00BFC4")) +
+  stat_contour( breaks=c(0.5), color="black" )
+
+p_hat <- predict(fit_glm, newdata = mnist_27$true_p)
+mnist_27$true_p %>%
+  mutate(p_hat = p_hat) %>%
+  ggplot(aes(x_1, x_2, z=p_hat, fill=p_hat)) +
+  geom_raster() +
+  scale_fill_gradientn(colors=c("#F8766D", "white", "#00BFC4")) +
+  stat_contour(breaks=c(0.5), color="black")
+
+p_hat <- predict(fit_glm, newdata = mnist_27$true_p )
+mnist_27$true_p %>%
+  mutate(p_hat=p_hat) %>%
+  ggplot() +
+  stat_contour(aes(x_1, x_2, z=p_hat), breaks=c(0.5), color="black") +
+  geom_point(mapping = aes(x_1, x_2, color=y), data = mnist_27$test )
+
