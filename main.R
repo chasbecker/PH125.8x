@@ -782,7 +782,7 @@ dat <- map_df(str_split(pdf_text(fn), "\n"), function(s){
     str_trim() %>%
     str_split_fixed("\\s+", n=6) %>%
     .[,1:5] %>%
-    as_data_frame() %>%
+    as_tibble() %>%
     setNames(c("day", header)) %>%
     mutate(month=month, day=as.numeric(day)) %>%
     gather(year, deaths, -c(day, month)) %>%
@@ -793,3 +793,24 @@ dat <- map_df(str_split(pdf_text(fn), "\n"), function(s){
                       "JUL"=7, "AGO"=8, "SEP"=9, "OCT"=10, "NOV"=11, "DEC"=12)) %>%
   mutate(date = make_date(year, month, day)) %>%
   dplyr::filter(date <= "2018-05-01")
+
+sp <-  60 / as.numeric(diff(range(dat$date)))
+fit <- dat %>% mutate(x=as.numeric(date)) %>% loess(deaths ~ x, data = ., span = sp, degree=1 )
+dat %>% mutate(smooth=predict(fit, as.numeric(date))) %>%
+  ggplot() +
+  geom_point(aes(date, deaths)) +
+  geom_line(aes(date, smooth), lwd=2, col=2)
+
+dat %>% mutate(smooth=predict(fit, as.numeric(date)), day=yday(date), year=as.character(year(date))) %>%
+  ggplot(aes(day, smooth, col=year)) +
+  geom_line(lwd=2)
+
+library(broom)
+library(dslabs)
+data("mnist_27")
+mnist_27$train %>% glm(y~x_2, family="binomial", data=.) %>% tidy()
+qplot(x_2, y, data=mnist_27$train)
+
+mnist_27$train %>% mutate(y=ifelse(y=="7", 1, 0)) %>%
+  ggplot(aes(x_2, y)) +
+  geom_smooth(method="loess")
