@@ -814,3 +814,48 @@ qplot(x_2, y, data=mnist_27$train)
 mnist_27$train %>% mutate(y=ifelse(y=="7", 1, 0)) %>%
   ggplot(aes(x_2, y)) +
   geom_smooth(method="loess")
+
+#lecture
+rm(list=ls())
+library(tidyverse)
+library(dslabs)
+if( !exists("mnist")) mnist <- read_mnist()
+
+class(mnist$train$images)
+x <- mnist$train$images[1:1000,]
+y <- mnist$train$labels[1:1000]
+class(x)
+class(y)
+
+length(x[,1])
+x_1 <- 1:5
+x_2 <- 6:10
+x_bound <- cbind(x_1, x_2)
+x_bound
+dim(x)
+dim(x_1)
+dim(as.matrix(x_1))
+dim(x)
+
+vcb <- 2
+vcb
+class(vcb)
+typeof(vcb)
+is.vector(vcb)
+is.matrix(vcb)
+
+rm(list=ls())
+my_vector <- 1:15
+
+mat <- matrix(my_vector, 5, 3, byrow=FALSE)
+mat
+
+mat_t <- matrix(my_vector, 3, 5, byrow=TRUE)
+mat_t
+identical(t(mat), mat_t)
+
+matrix(my_vector, 5, 5)
+
+grid <- matrix(x[3,], 28, 28)
+image(1:28, 1:28, grid)
+image(1:28, 1:28, grid[,28:1])
