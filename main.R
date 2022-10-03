@@ -844,7 +844,6 @@ typeof(vcb)
 is.vector(vcb)
 is.matrix(vcb)
 
-rm(list=ls())
 my_vector <- 1:15
 
 mat <- matrix(my_vector, 5, 3, byrow=FALSE)
@@ -859,3 +858,39 @@ matrix(my_vector, 5, 5)
 grid <- matrix(x[3,], 28, 28)
 image(1:28, 1:28, grid)
 image(1:28, 1:28, grid[,28:1])
+
+# Row and Column Summaries and Apply
+
+sums <- rowSums(x)
+sums
+avg <- rowMeans(x)
+avg
+tibble( labels = as.factor(y), row_averages = avg) %>%
+  qplot( labels, row_averages, data = ., geom = "boxplot" )
+
+avgs <- apply(x, 1, mean)
+sds <- apply(x, 2, sd)
+
+# Filtering Columns Based on Summaries
+
+# install.packages("matrixStats")
+library(matrixStats)
+
+sds <- colSds(x)
+qplot(sds, bins = "30", color = I("black"))
+image(1:28, 1:28, matrix(sds, 28, 28)[,28:1])
+
+x[ ,c(351,353)]
+x[c(2,3),]
+new_x <- x[ ,colSds(x) > 60]
+dim(new_x)
+class(x[,1])
+dim(x[1,])
+class(x[1,])
+
+class(x[ ,1,drop=FALSE])
+dim(x[,1,drop=FALSE])
+
+# Indexing with Matrices and Binarizing the Data
+# Level 2 headings may be created by course providers in the future.
+
