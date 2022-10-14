@@ -893,4 +893,12 @@ dim(x[,1,drop=FALSE])
 
 # Indexing with Matrices and Binarizing the Data
 # Level 2 headings may be created by course providers in the future.
+# run from line 818
+
+rm(list=ls())
+
+mat <- matrix(1:15, 5, 3)
+mat
+mat[mat>6 & mat<12] <- 0
+mat
 
